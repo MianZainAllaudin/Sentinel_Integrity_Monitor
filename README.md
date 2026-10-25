@@ -22,12 +22,4 @@
 
 ---
 
-## 📋 Scope Boundaries
-
-* **In Scope:** Baseline checking, move detection, ignore rules, JSON/HTML reports, Discord/Slack webhooks, and CI/CD policy enforcement.
-* **Stretch Goals:** Lockfile consistency verification, signed artifact manifests, and Windows toast alerts.
-* **Out of Scope:** Real-time continuous file watching, ACL tracking, GitHub API commit checks, a built-in scheduler, and email notifications.
-
----
-
 
