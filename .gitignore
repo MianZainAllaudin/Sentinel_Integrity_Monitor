@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.env
+.sentinel/
+node_modules/
+dist/
+build/
+*.log
+.sentinelignore-state/
+.DS_Store
