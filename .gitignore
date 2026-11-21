@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+.sentinel/
+node_modules/
+dist/
+build/
+*.log
+.sentinelignore-state/
+.DS_Store
