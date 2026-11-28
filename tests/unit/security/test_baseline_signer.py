@@ -137,3 +137,9 @@ def test_error_messages_never_contain_the_key():
     with pytest.raises(InvalidSignatureError) as info:
         verify_baseline(envelope, secret)
     assert secret.decode() not in str(info.value)
+
+
+def test_exceptions_carry_the_stable_error_codes():
+    assert KeyConfigurationError.code == "HMAC_KEY_MISSING"
+    assert InvalidSignatureError.code == "HMAC_VERIFICATION_FAILED"
+    assert MalformedBaselineError.code == "BASELINE_INVALID"

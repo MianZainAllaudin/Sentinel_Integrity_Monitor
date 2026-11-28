@@ -29,19 +29,30 @@ _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 class SecurityError(Exception):
-    """Base class for every security failure. Messages never contain the key."""
+    """Base class for every security failure. Messages never contain the key.
+
+    ``code`` is one of the stable error codes from contract section 16.
+    """
+
+    code = "BASELINE_INVALID"
 
 
 class KeyConfigurationError(SecurityError):
     """The HMAC key is missing, empty or too short."""
 
+    code = "HMAC_KEY_MISSING"
+
 
 class MalformedBaselineError(SecurityError):
     """The envelope or payload does not follow the baseline schema."""
 
+    code = "BASELINE_INVALID"
+
 
 class InvalidSignatureError(SecurityError):
     """The signature does not match: tampered baseline or wrong key."""
+
+    code = "HMAC_VERIFICATION_FAILED"
 
 
 def _check_key(key: object) -> bytes:
