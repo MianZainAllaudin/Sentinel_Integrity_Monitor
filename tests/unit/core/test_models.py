@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+import os
 
 from sentinel.core.models import (
     HASH_ALGORITHM,
@@ -334,6 +335,8 @@ class TestPathHelpers(unittest.TestCase):
             "//server/share/folder",
         )
 
+
+    @unittest.skipIf(os.name == "nt", "POSIX absolute paths do not exist on Windows")
     def test_normalize_root_path_posix_absolute_and_trailing_slash(self) -> None:
         self.assertEqual(normalize_root_path(Path("/")), "/")
         self.assertEqual(normalize_root_path(Path("/opt/sentinel/app/")), "/opt/sentinel/app")

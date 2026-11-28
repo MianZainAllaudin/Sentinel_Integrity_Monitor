@@ -5,6 +5,7 @@ from __future__ import annotations
 from hashlib import sha256
 import re
 import unittest
+import os
 from unittest.mock import patch
 import uuid
 
@@ -436,6 +437,7 @@ class TestCaseSensitivityErrorsAndOrdering(unittest.TestCase):
         self.assertEqual(rec.new_path, "src/main.py")
         self.assertIsNone(rec.old_path)
 
+    @unittest.skipIf(os.name == "nt", "POSIX path semantics cannot be simulated on Windows")
     def test_posix_root_remains_case_sensitive_when_non_windows(self) -> None:
         base_snap = _snap("Src/Main.py", "same-code", size_bytes=200, mtime_ns=1000)
         baseline = build_baseline("/opt/myapp", [base_snap])  # type: ignore[arg-type]

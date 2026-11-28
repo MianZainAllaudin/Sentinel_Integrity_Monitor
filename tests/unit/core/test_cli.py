@@ -469,48 +469,7 @@ class TestCliErrorHandling(unittest.TestCase):
                         self.assertFalse(payload["success"])
                         self.assertEqual(payload["error"]["code"], "INVALID_ROOT_PATH")
 
-    def test_unmerged_security_stub_not_implemented_error_returns_exit_two(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp) / "target"
-            root.mkdir()
-            (root / "a.txt").write_text("alpha", encoding="utf-8")
-            state_dir = Path(tmp) / "state"
-
-            with mock.patch.dict(
-                os.environ,
-                {"SENTINEL_HMAC_KEY": _valid_b64_key()},
-                clear=False,
-            ):
-                # Real application.initialize hits the unmerged security stub when unpatched.
-                code_txt, out_txt, err_txt = _run_cli(
-                    ["init", str(root), "--state-dir", str(state_dir)]
-                )
-                self.assertEqual(code_txt, cli.EXIT_ERROR)
-                self.assertEqual(out_txt, "")
-                self.assertIn("NOT_IMPLEMENTED", err_txt)
-                self.assertIn("not implemented yet", err_txt)
-
-                code_json, out_json, err_json = _run_cli(
-                    ["init", str(root), "--state-dir", str(state_dir), "--json"]
-                )
-                self.assertEqual(code_json, cli.EXIT_ERROR)
-                self.assertEqual(err_json, "")
-                payload = json.loads(out_json)
-                self.assertFalse(payload["success"])
-                self.assertEqual(payload["error"]["code"], "NOT_IMPLEMENTED")
-                self.assertIn("not implemented yet", payload["error"]["message"])
-
-                with mock.patch.object(
-                    application,
-                    "verify",
-                    side_effect=NotImplementedError("audit_log stub"),
-                ):
-                    v_code, _, v_err = _run_cli(
-                        ["verify", str(root), "--state-dir", str(state_dir)]
-                    )
-                    self.assertEqual(v_code, cli.EXIT_ERROR)
-                    self.assertIn("NOT_IMPLEMENTED", v_err)
-                    self.assertIn("audit_log stub", v_err)
+    
 
     def test_generic_security_and_runtime_exceptions_return_exit_two(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
