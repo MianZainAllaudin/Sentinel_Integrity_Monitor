@@ -1,0 +1,56 @@
+name: Sentinel integrity check
+
+# The scanner is installed from the TRUSTED base commit; the pull request tree is only
+# ever scanned as data. No repository secret is used: the HMAC key is random per job.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  sentinel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout trusted base commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.event.before }}
+          path: base
+          persist-credentials: false
+
+      - name: Checkout tree under test
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: head
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Sentinel from the trusted base commit
+        run: python -m pip install --quiet ./base
+
+      - name: Compare tree under test with trusted baseline
+        run: >
+          python -I -m sentinel.ci_runner
+          --base-dir base --head-dir head
+          --fail-on high
+          --audit-log "$RUNNER_TEMP/sentinel-audit.jsonl"
+          --report-json "$RUNNER_TEMP/sentinel-report.json"
+          --report-html "$RUNNER_TEMP/sentinel-report.html"
+
+      - name: Upload Sentinel evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sentinel-evidence
+          if-no-files-found: ignore
+          path: |
+            ${{ runner.temp }}/sentinel-audit.jsonl
+            ${{ runner.temp }}/sentinel-report.json
+            ${{ runner.temp }}/sentinel-report.html
