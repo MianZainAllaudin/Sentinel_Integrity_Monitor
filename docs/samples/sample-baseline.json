@@ -1,0 +1,39 @@
+{
+  "payload": {
+    "schema_version": 1,
+    "root_path": "C:/Projects/MyApp",
+    "created_at": "2026-11-14T12:30:00Z",
+    "hash_algorithm": "sha256",
+    "files": {
+      "README.md": {
+        "path": "README.md",
+        "sha256": "bfda92f1213079cd8ea550107e698d8c57c0e7c9615ac803146a7bac50946a1d",
+        "size_bytes": 51,
+        "mtime_ns": 1794658200000000000
+      },
+      "config/settings.json": {
+        "path": "config/settings.json",
+        "sha256": "0df69b45d373ec8b8abe4c121e7f5898279de1641c9e54273d7bef79632f601c",
+        "size_bytes": 80,
+        "mtime_ns": 1794658500000000000
+      },
+      "src/legacy_helper.py": {
+        "path": "src/legacy_helper.py",
+        "sha256": "1af7f78a30bd689784e43f49d1e15da1551f3d1339ff297bf604b33413a3ca1b",
+        "size_bytes": 52,
+        "mtime_ns": 1794658800000000000
+      },
+      "src/main.py": {
+        "path": "src/main.py",
+        "sha256": "ff093e8444356b723309dfe79d402278ca76d6c8366bbc2f0eb5aebd7a397a10",
+        "size_bytes": 54,
+        "mtime_ns": 1794659100000000000
+      }
+    }
+  },
+  "signature": {
+    "algorithm": "hmac-sha256",
+    "key_id": "local-v1",
+    "value": "67d3e69ecca789eb4a6b59ecc04e8f9e50637593b760d032eac30077fb873def"
+  }
+}

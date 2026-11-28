@@ -22,4 +22,47 @@
 
 ---
 
+## CLI Quick Start
+
+1. **Install or run from source** (Python 3.11+):
+
+   ```bash
+   pip install -e .
+   # Or run without installing: PYTHONPATH=src python -m sentinel --help
+   ```
+
+2. **Configure `SENTINEL_HMAC_KEY`** (base64 key >= 16 raw bytes, stored outside the monitored folder):
+
+   ```powershell
+   # PowerShell
+   $env:SENTINEL_HMAC_KEY = python -c "import base64, secrets; print(base64.b64encode(secrets.token_bytes(32)).decode())"
+   ```
+
+   ```bash
+   # bash / zsh
+   export SENTINEL_HMAC_KEY="$(python3 -c 'import base64, secrets; print(base64.b64encode(secrets.token_bytes(32)).decode())')"
+   ```
+
+3. **Initialize, verify, and accept changes**:
+
+   ```bash
+   # Create the initial signed baseline
+   sentinel init ./my-app
+
+   # Verify directory integrity (optionally export JSON/HTML reports)
+   sentinel verify ./my-app --json-out ./scan-result.json --html-out ./scan-report.html
+
+   # Approve legitimate changes as the new signed baseline
+   sentinel accept ./my-app --yes
+   ```
+
+4. **Exit codes**:
+   * `0` — `CLEAN` (`verify`) or successful `init` / `accept`
+   * `1` — `CHANGED` (one or more changes detected by `verify`)
+   * `2` — `ERROR` / `BASELINE_INVALID` (tampered/missing baseline, invalid key, filesystem/argument error)
+
+For full command flags, `.sentinelignore` syntax, move detection notes, and troubleshooting, see [docs/cli-usage.md](docs/cli-usage.md) and the schema examples in [docs/samples/](docs/samples/) ([sample-baseline.json](docs/samples/sample-baseline.json), [sample-scan-result.json](docs/samples/sample-scan-result.json)).
+
+---
+
 

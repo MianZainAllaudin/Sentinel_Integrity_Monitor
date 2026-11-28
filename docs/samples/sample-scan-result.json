@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "scan_id": "7f3c9e2a-4b1d-4e8a-9c6b-2a1d5f8e3b04",
+  "root_path": "C:/Projects/MyApp",
+  "started_at": "2026-11-14T12:40:00Z",
+  "completed_at": "2026-11-14T12:40:02Z",
+  "status": "CHANGED",
+  "summary": {
+    "added": 1,
+    "modified": 1,
+    "deleted": 1,
+    "moved": 1,
+    "errors": 0
+  },
+  "changes": [
+    {
+      "status": "ADDED",
+      "path": ".github/workflows/deploy.yml",
+      "old_path": null,
+      "new_path": ".github/workflows/deploy.yml",
+      "old_sha256": null,
+      "new_sha256": "305debbc3508ad20ee83029aa2960af8ffbe7af9d64e909c6dbfde1b7e289ffe",
+      "old_size_bytes": null,
+      "new_size_bytes": 107,
+      "severity": "HIGH",
+      "reason": "New file detected in CI/CD workflow path"
+    },
+    {
+      "status": "MOVED",
+      "path": "config/app_settings.json",
+      "old_path": "config/settings.json",
+      "new_path": "config/app_settings.json",
+      "old_sha256": "0df69b45d373ec8b8abe4c121e7f5898279de1641c9e54273d7bef79632f601c",
+      "new_sha256": "0df69b45d373ec8b8abe4c121e7f5898279de1641c9e54273d7bef79632f601c",
+      "old_size_bytes": 80,
+      "new_size_bytes": 80,
+      "severity": "LOW",
+      "reason": "File moved or renamed with matching SHA-256 digest and size"
+    },
+    {
+      "status": "DELETED",
+      "path": "src/legacy_helper.py",
+      "old_path": "src/legacy_helper.py",
+      "new_path": null,
+      "old_sha256": "1af7f78a30bd689784e43f49d1e15da1551f3d1339ff297bf604b33413a3ca1b",
+      "new_sha256": null,
+      "old_size_bytes": 52,
+      "new_size_bytes": null,
+      "severity": "MEDIUM",
+      "reason": "Baseline file missing from monitored directory"
+    },
+    {
+      "status": "MODIFIED",
+      "path": "src/main.py",
+      "old_path": null,
+      "new_path": "src/main.py",
+      "old_sha256": "ff093e8444356b723309dfe79d402278ca76d6c8366bbc2f0eb5aebd7a397a10",
+      "new_sha256": "eaf25cf9b42e860122307ef24a9116612c2d681c45cf22f8592c390eb8e0fe2d",
+      "old_size_bytes": 54,
+      "new_size_bytes": 64,
+      "severity": "MEDIUM",
+      "reason": "SHA-256 content hash changed"
+    }
+  ],
+  "errors": []
+}
