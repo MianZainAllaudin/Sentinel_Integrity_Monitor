@@ -1,3 +1,6 @@
-from .application import initialize, verify, accept
+"""Entry point for running Sentinel via ``python -m sentinel``."""
 
-__all__ = ["initialize", "verify", "accept"]
+from .cli import main
+
+if __name__ == "__main__":
+    raise SystemExit(main())
