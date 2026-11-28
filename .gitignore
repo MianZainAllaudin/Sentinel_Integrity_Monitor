@@ -9,3 +9,8 @@ build/
 *.log
 .sentinelignore-state/
 .DS_Store
+.venv/
+venv/
+.pytest_cache/
+.env.local
+reports/
