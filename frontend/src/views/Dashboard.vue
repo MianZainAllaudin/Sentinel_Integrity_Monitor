@@ -5,6 +5,7 @@
     <section class="card scan-panel">
       <div class="row">
         <input v-model="root" list="tracked-folders" placeholder="Folder to monitor (e.g. C:/Projects/MyApp)" class="input" />
+        <button :disabled="scanning" @click="pickerOpen = true" class="btn">Browse…</button>
         <datalist id="tracked-folders"><option v-for="f in folders" :key="f.id" :value="f.root_path" /></datalist>
         <button :disabled="scanning || !root" @click="runScan" class="btn btn-primary">Verify</button>
         <button :disabled="scanning || !result || result.status !== 'CHANGED'" @click="openAccept" class="btn">Accept Changes</button>
@@ -12,6 +13,8 @@
       </div>
       <p v-if="root" class="hint">Each folder has its own baseline, audit log and history, stored outside the monitored folder and shared with the command line.</p>
     </section>
+
+    <FolderPicker v-if="pickerOpen" :start="root" @select="onPick" @close="pickerOpen = false" />
 
     <section v-if="error" class="card alert">{{ error }}</section>
 
@@ -64,6 +67,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { api } from "../api/client.js";
+import FolderPicker from "../components/FolderPicker.vue";
 
 const root = ref("");
 const scanning = ref(false);
@@ -72,6 +76,15 @@ const error = ref(null);
 const acceptOpen = ref(false);
 const lastScanId = ref(null);
 const folders = ref([]);
+const pickerOpen = ref(false);
+
+function onPick(path) {
+  root.value = path;
+  pickerOpen.value = false;
+  result.value = null;
+  error.value = null;
+  lastScanId.value = null;
+}
 
 async function loadFolders() {
   try {

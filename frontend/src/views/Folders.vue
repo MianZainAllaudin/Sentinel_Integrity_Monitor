@@ -5,10 +5,13 @@
     <section class="card">
       <div class="row">
         <input v-model="newRoot" class="input" placeholder="Folder to track (e.g. D:\Projects\MyApp)" @keyup.enter="track" />
+        <button :disabled="busy" @click="pickerOpen = true" class="btn">Browse…</button>
         <button :disabled="busy || !newRoot" @click="track" class="btn btn-primary">Track &amp; Create Baseline</button>
       </div>
       <p class="hint">Each tracked folder has its own baseline, audit log and scan history. The command line uses the same ones.</p>
     </section>
+
+    <FolderPicker v-if="pickerOpen" :start="newRoot" @select="onPick" @close="pickerOpen = false" />
 
     <section v-if="error" class="card alert">{{ error }}</section>
     <section v-if="notice" class="card ok">{{ notice }}</section>
@@ -63,6 +66,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { api } from "../api/client.js";
+import FolderPicker from "../components/FolderPicker.vue";
 
 const folders = ref([]);
 const newRoot = ref("");
@@ -70,6 +74,12 @@ const busy = ref(false);
 const error = ref(null);
 const notice = ref(null);
 const pending = ref(null);
+const pickerOpen = ref(false);
+
+function onPick(path) {
+  newRoot.value = path;
+  pickerOpen.value = false;
+}
 
 function fmt(ts) {
   const d = new Date(ts);

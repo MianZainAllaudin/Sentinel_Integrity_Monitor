@@ -1,5 +1,6 @@
 from typing import Optional
 from fastapi import APIRouter, HTTPException
+from .fs_browse import BrowseError, list_directory
 from .schemas import ScanStartRequest, ScanAcceptRequest, HealthResponse
 from .services import (
     start_scan, accept_changes, get_status, init_baseline, list_scans as svc_list_scans,
@@ -71,3 +72,11 @@ def accept_endpoint(body: ScanAcceptRequest):
     if not result.get("success", False):
         raise HTTPException(status_code=400, detail=result.get("error", {}))
     return result
+
+
+@router.get("/fs/list")
+def fs_list(path: Optional[str] = None):
+    try:
+        return {"success": True, "data": list_directory(path)}
+    except BrowseError as exc:
+        raise HTTPException(status_code=400, detail={"code": exc.code, "message": exc.message})
