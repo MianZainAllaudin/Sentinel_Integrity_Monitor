@@ -6,7 +6,13 @@
 
     <div class="card">
       <div class="hist-bar">
-        <span class="meta">{{ scans.length }} saved scan{{ scans.length === 1 ? "" : "s" }} (kept across restarts)</span>
+        <span class="meta">
+          <select v-model="folderId" @change="load" class="input sel">
+            <option value="">All folders</option>
+            <option v-for="f in folders" :key="f.id" :value="f.id">{{ f.root_path }}</option>
+          </select>
+          {{ scans.length }} saved scan{{ scans.length === 1 ? "" : "s" }} (kept across restarts)
+        </span>
         <span class="hist-actions">
           <button @click="load" :disabled="loading" class="btn">Refresh</button>
           <button @click="confirmOpen = true" :disabled="loading || scans.length === 0" class="btn btn-danger">Clear History</button>
@@ -46,7 +52,7 @@
     <div v-if="confirmOpen" class="overlay" @click.self="confirmOpen = false">
       <div class="dlg-body">
         <h2>Clear History</h2>
-        <p>Delete all {{ scans.length }} saved scan records? Baselines and the audit log are not affected. This cannot be undone.</p>
+        <p>Delete {{ folderId ? "the" : "all" }} {{ scans.length }} saved scan record{{ scans.length === 1 ? "" : "s" }}{{ folderId ? " for this folder" : " for every tracked folder" }}? Baselines are not affected and the clearing is recorded in the audit log. This cannot be undone.</p>
         <div class="dlg-actions">
           <button @click="confirmOpen = false" class="btn">Cancel</button>
           <button @click="clearAll" class="btn btn-danger">Clear History</button>
@@ -65,6 +71,8 @@ const selected = ref(null);
 const loading = ref(false);
 const error = ref(null);
 const confirmOpen = ref(false);
+const folders = ref([]);
+const folderId = ref("");
 
 function fmt(ts) {
   const d = new Date(ts);
@@ -80,7 +88,8 @@ async function load() {
   loading.value = true;
   error.value = null;
   try {
-    const data = await api.scans();
+    try { folders.value = (await api.folders()).data.folders || []; } catch { folders.value = []; }
+    const data = await api.scans(folderId.value);
     scans.value = data.data.scans || [];
     if (selected.value && !scans.value.some((s) => s.scan_id === selected.value.scan_id)) selected.value = null;
   } catch (e) {
@@ -105,7 +114,7 @@ async function clearAll() {
   confirmOpen.value = false;
   error.value = null;
   try {
-    await api.clearScans();
+    await api.clearScans(folderId.value);
     selected.value = null;
     await load();
   } catch (e) {
@@ -137,6 +146,7 @@ ul { margin: 6px 0 0 0; padding-left: 18px; color: #374151; }
 .alert { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
 .hist-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; flex-wrap: wrap; }
 .hist-actions { display: flex; gap: 8px; }
+.sel { min-width: 220px; max-width: 360px; margin-right: 8px; }
 .meta { color: #6b7280; font-size: 0.85rem; }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .btn-danger { background: #dc2626; color: #fff; border-color: #dc2626; }

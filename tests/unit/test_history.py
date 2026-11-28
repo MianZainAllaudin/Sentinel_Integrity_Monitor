@@ -126,12 +126,16 @@ class TestHistoryIntegration(unittest.TestCase):
 
     def test_baseline_invalid_scans_are_recorded_too(self) -> None:
         from fastapi.testclient import TestClient
+        from sentinel import tracking
         from sentinel.api.main import app
 
         with tempfile.TemporaryDirectory() as tmp, self._env(Path(tmp) / "state"):
+            state = Path(tmp) / "state"
             root = Path(tmp) / "root"
             root.mkdir()
             client = TestClient(app)
+            self.assertEqual(client.post("/api/v1/baselines", json={"root_path": str(root)}).status_code, 200)
+            (tracking.state_dir_for(state, root) / "baseline.json").unlink()  # attacker deletes the baseline
             r = client.post("/api/v1/scans", json={"root_path": str(root)}).json()["data"]
             self.assertEqual(r["status"], "BASELINE_INVALID")
             scans = client.get("/api/v1/scans").json()["data"]["scans"]
@@ -139,7 +143,7 @@ class TestHistoryIntegration(unittest.TestCase):
 
     def test_clear_endpoint_empties_history_and_is_audited(self) -> None:
         from fastapi.testclient import TestClient
-        from sentinel import cli
+        from sentinel import cli, tracking
         from sentinel.api.main import app
         from sentinel.security.audit_log import verify_audit_chain
 
@@ -157,13 +161,12 @@ class TestHistoryIntegration(unittest.TestCase):
             self.assertEqual(res["data"]["removed"], 2)
             self.assertEqual(client.get("/api/v1/scans").json()["data"]["scans"], [])
             self.assertEqual(client.get("/api/v1/scans/anything").status_code, 404)
-            log = (state / "audit.jsonl").read_text(encoding="utf-8")
-            self.assertIn("HISTORY_CLEARED", log)
-            chain = verify_audit_chain(state / "audit.jsonl")
+            sd = tracking.state_dir_for(state, root)
+            self.assertIn("HISTORY_CLEARED", (sd / "audit.jsonl").read_text(encoding="utf-8"))
+            chain = verify_audit_chain(sd / "audit.jsonl")
             valid = chain["valid"] if isinstance(chain, dict) else chain.valid
             self.assertTrue(valid)
-            # baseline untouched by clearing history
-            self.assertTrue((state / "baseline.json").is_file())
+            self.assertTrue((sd / "baseline.json").is_file())  # clearing history never touches the baseline
 
 
 if __name__ == "__main__":

@@ -74,11 +74,13 @@ export SENTINEL_HMAC_KEY="$(python3 -c 'import base64, secrets; print(base64.b64
 
 ### Optional: state directory
 
-By default, baseline and audit log files are stored in `~/.sentinel/`. Override with:
+Sentinel keeps a separate baseline, audit log and scan history for every monitored folder, under `~/.sentinel/roots/<folder id>/`. The command line and the dashboard use the same location, so a folder initialised in one is usable in the other. The dashboard's **Tracked Folders** tab lists them. Change the base location with:
 
 ```powershell
-$env:SENTINEL_STATE_DIR = "C:/SentinelState/MyApp"
+$env:SENTINEL_STATE_DIR = "C:/SentinelState"
 ```
+
+Passing `--state-dir PATH` to a CLI command uses that exact folder instead (one custom state folder; the dashboard does not know about it).
 
 ## Running the Backend (FastAPI)
 

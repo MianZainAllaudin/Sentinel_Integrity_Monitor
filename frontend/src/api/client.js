@@ -19,8 +19,10 @@ export const api = {
   status: () => request("/api/v1/status"),
   scan: (root) => request("/api/v1/scans", { method: "POST", body: JSON.stringify({ root_path: root }) }),
   accept: (scanId, confirm) => request("/api/v1/accept", { method: "POST", body: JSON.stringify({ scan_id: scanId, confirm }) }),
-  scans: () => request("/api/v1/scans"),
+  scans: (folderId) => request("/api/v1/scans" + (folderId ? "?folder_id=" + encodeURIComponent(folderId) : "")),
   scanDetail: (id) => request("/api/v1/scans/" + encodeURIComponent(id)),
-  clearScans: () => request("/api/v1/scans", { method: "DELETE" }),
+  clearScans: (folderId) => request("/api/v1/scans" + (folderId ? "?folder_id=" + encodeURIComponent(folderId) : ""), { method: "DELETE" }),
+  folders: () => request("/api/v1/folders"),
+  untrack: (id) => request("/api/v1/folders/" + encodeURIComponent(id), { method: "DELETE" }),
   init: (root) => request("/api/v1/baselines", { method: "POST", body: JSON.stringify({ root_path: root }) }),
 };

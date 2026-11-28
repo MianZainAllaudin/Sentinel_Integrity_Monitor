@@ -17,6 +17,9 @@
 * Sentinel never prints the key, returns it from the API, writes it to a report or includes it in an exception message.
   Keys shorter than 16 bytes are refused. A missing key is an explicit error (`HMAC_KEY_MISSING`), never silently replaced.
 
+## State folders (one per monitored folder)
+Each monitored folder has its own state folder: `<base>/roots/<id>/` holding `baseline.json`, `audit.jsonl` and `history.jsonl`. `<base>` is `SENTINEL_STATE_DIR` or `~/.sentinel`, and `<id>` is a short hash of the folder's absolute path (case-insensitive on Windows). The CLI and the dashboard resolve the same folder, and `<base>/tracked.json` lists the folders that have been initialised (used by the Tracked Folders tab). Initialising one folder never touches another folder's baseline. `--state-dir PATH` bypasses this and uses PATH directly. `history.jsonl` is an unsigned convenience log; the hash-chained audit log is the tamper-evident record, and clearing history writes a `HISTORY_CLEARED` audit entry.
+
 ## Exit codes (contract section 11.1)
 | Code | Meaning |
 |---|---|
@@ -41,4 +44,4 @@ The persistent local baseline and the CI baseline are separate profiles.
 * The hash-chained audit log detects edits and deletions in the middle, not a full rewrite or tail truncation.
 * A pull request can edit `.github/workflows/sentinel.yml` itself. Protect that file with CODEOWNERS and branch protection (required status check).
 * The comparison is only as strong as the base commit: a malicious change already merged into the base is trusted.
-* Third-party actions are referenced by version tag; pin them to reviewed commit SHAs before final submission.
+* Third-party actions are referenced by version tag; pin them to reviewed commit SHAs before final submission.

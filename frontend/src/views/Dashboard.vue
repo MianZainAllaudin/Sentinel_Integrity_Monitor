@@ -4,12 +4,13 @@
 
     <section class="card scan-panel">
       <div class="row">
-        <input v-model="root" placeholder="Folder to monitor (e.g. C:/Projects/MyApp)" class="input" />
+        <input v-model="root" list="tracked-folders" placeholder="Folder to monitor (e.g. C:/Projects/MyApp)" class="input" />
+        <datalist id="tracked-folders"><option v-for="f in folders" :key="f.id" :value="f.root_path" /></datalist>
         <button :disabled="scanning || !root" @click="runScan" class="btn btn-primary">Verify</button>
         <button :disabled="scanning || !result || result.status !== 'CHANGED'" @click="openAccept" class="btn">Accept Changes</button>
         <button :disabled="scanning || !root" @click="initRoot" class="btn btn-ghost">Init Baseline</button>
       </div>
-      <p v-if="root" class="hint">Baseline and state are stored outside the monitored root.</p>
+      <p v-if="root" class="hint">Each folder has its own baseline, audit log and history, stored outside the monitored folder and shared with the command line.</p>
     </section>
 
     <section v-if="error" class="card alert">{{ error }}</section>
@@ -61,7 +62,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { api } from "../api/client.js";
 
 const root = ref("");
@@ -70,6 +71,15 @@ const result = ref(null);
 const error = ref(null);
 const acceptOpen = ref(false);
 const lastScanId = ref(null);
+const folders = ref([]);
+
+async function loadFolders() {
+  try {
+    const data = await api.folders();
+    folders.value = data.data.folders || [];
+  } catch { folders.value = []; }
+}
+onMounted(loadFolders);
 
 async function runScan() {
   scanning.value = true;
@@ -97,6 +107,7 @@ async function initRoot() {
     return;
   }
   scanning.value = false;
+  await loadFolders();
   await runScan();
 }
 

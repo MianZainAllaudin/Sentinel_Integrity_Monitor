@@ -14,6 +14,7 @@ from typing import Any, Dict, Optional, Sequence
 import uuid
 
 from . import __version__, application
+from . import tracking
 from .config.settings import AppSettings, OperationResult
 from .core.models import ScanResult, ScanStatus, scan_result_to_dict
 from .reporting.html_report import write_html_report
@@ -54,7 +55,7 @@ def build_parser() -> argparse.ArgumentParser:
         dest="state_dir",
         default=None,
         metavar="PATH",
-        help="Override SENTINEL_STATE_DIR (default: $SENTINEL_STATE_DIR or ~/.sentinel).",
+        help="Use this folder directly as the state folder (default: a per-folder state under $SENTINEL_STATE_DIR or ~/.sentinel, shared with the dashboard).",
     )
     common_parser.add_argument(
         "--baseline",
@@ -433,7 +434,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     try:
         settings = build_settings_from_args(args)
-        return _run_command(args, root, settings)
+        base_state_dir = settings.state_dir
+        per_root = getattr(args, "state_dir", None) is None
+        if per_root:
+            # Same per-folder state the dashboard uses, so the two never disagree.
+            settings = tracking.settings_for_root(settings, root)
+        code = _run_command(args, root, settings)
+        if per_root and args.command == "init" and code == EXIT_CLEAN:
+            try:
+                tracking.track_folder(base_state_dir, root)
+            except OSError:
+                pass  # registry is a convenience for the dashboard; init itself succeeded
+        return code
     except NotImplementedError as exc:
         detail = str(exc).strip()
         message = (

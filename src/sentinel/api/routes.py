@@ -1,6 +1,10 @@
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 from .schemas import ScanStartRequest, ScanAcceptRequest, HealthResponse
-from .services import start_scan, accept_changes, get_status, init_baseline, list_scans as svc_list_scans, get_scan_by_id, clear_scans
+from .services import (
+    start_scan, accept_changes, get_status, init_baseline, list_scans as svc_list_scans,
+    get_scan_by_id, clear_scans, list_folders, untrack,
+)
 
 router = APIRouter(prefix="/api/v1")
 
@@ -24,13 +28,26 @@ def start_scan_endpoint(body: ScanStartRequest):
 
 
 @router.get("/scans")
-def list_scans():
-    return svc_list_scans()
+def list_scans(folder_id: Optional[str] = None):
+    return svc_list_scans(folder_id)
 
 
 @router.delete("/scans")
-def clear_scans_endpoint():
-    return clear_scans()
+def clear_scans_endpoint(folder_id: Optional[str] = None):
+    return clear_scans(folder_id)
+
+
+@router.get("/folders")
+def folders():
+    return list_folders()
+
+
+@router.delete("/folders/{folder_id}")
+def untrack_endpoint(folder_id: str):
+    result = untrack(folder_id)
+    if not result.get("success", False):
+        raise HTTPException(status_code=404, detail=result.get("error", {}))
+    return result
 
 
 @router.get("/scans/{scan_id}")

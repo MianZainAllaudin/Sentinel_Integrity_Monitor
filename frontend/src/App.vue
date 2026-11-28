@@ -3,11 +3,12 @@
     <nav class="bar">
       <div class="brand">Sentinel</div>
       <button @click="view = 'dashboard'" :class="{ active: view === 'dashboard' }">Dashboard</button>
+      <button @click="view = 'folders'" :class="{ active: view === 'folders' }">Tracked Folders</button>
       <button @click="view = 'history'" :class="{ active: view === 'history' }">History</button>
     </nav>
 
     <main class="wrap">
-      <component :is="view === 'dashboard' ? Dashboard : History" />
+      <component :is="views[view]" :key="view" />
     </main>
   </div>
 </template>
@@ -16,7 +17,9 @@
 import { ref } from "vue";
 import Dashboard from "./views/Dashboard.vue";
 import History from "./views/History.vue";
+import Folders from "./views/Folders.vue";
 const view = ref("dashboard");
+const views = { dashboard: Dashboard, folders: Folders, history: History };
 </script>
 
 <style>
