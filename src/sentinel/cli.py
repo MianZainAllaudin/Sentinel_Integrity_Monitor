@@ -364,6 +364,11 @@ def _run_command(args: argparse.Namespace, root: Path, settings: AppSettings) ->
 
     if args.command == "accept":
         scan_id = getattr(args, "scan_id", None) or str(uuid.uuid4())
+        if not getattr(args, "yes", False) and sys.stdin.isatty():
+            answer = input(f"Accept the current state of {root} as the new baseline? [y/N] ")
+            if answer.strip().lower() not in ("y", "yes"):
+                print("Sentinel ACCEPT: CANCELLED")
+                return EXIT_ERROR
         op_result = application.accept(root, scan_id, settings)
         if use_json:
             print(json.dumps(_operation_result_to_dict(op_result), indent=2, ensure_ascii=False))

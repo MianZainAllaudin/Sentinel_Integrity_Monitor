@@ -4,13 +4,30 @@ from typing import Optional
 import uuid
 import json
 from .config.settings import AppSettings, OperationResult
-from .core.models import ScanResult, ScanError, ChangeRecord, FileSnapshot, BaselineData
+from .core.models import ScanResult, ScanError, ChangeRecord, FileSnapshot, BaselineData, scan_result_to_dict
+from .history import record_scan
 from .core.scanner import scan_directory
 from .core.diff import compare_snapshots
 from .core.baseline import build_baseline
 from .security.baseline_signer import sign_baseline, verify_baseline
 from .security.audit_log import append_audit_event
+
+def _audit(settings: AppSettings, event: str, scan_id, payload: dict) -> None:
+    try:
+        append_audit_event(
+            settings.audit_log_path or (settings.state_dir / "audit.jsonl"),
+            event, scan_id, payload,
+        )
+    except Exception:
+        pass  # a broken audit log must not hide the original result
 from .integrations.severity import apply_severity
+
+
+def _record_history(settings: AppSettings, result: ScanResult) -> None:
+    try:
+        record_scan(settings.state_dir, scan_result_to_dict(result))
+    except Exception:
+        pass  # history is a convenience log; it must never break a scan
 
 
 def initialize(root: Path, settings: AppSettings) -> OperationResult:
@@ -65,7 +82,10 @@ def verify(root: Path, settings: AppSettings) -> ScanResult:
     sid = str(uuid.uuid4())
     baseline = _load_verified_baseline(settings)
     if baseline is None:
-        return _make_error_result(root, "BASELINE_INVALID", "baseline could not be verified")
+        bad = _make_error_result(root, "BASELINE_INVALID", "baseline could not be verified")
+        _audit(settings, "BASELINE_REJECTED", bad.scan_id, {"reason": "BASELINE_INVALID"})
+        _record_history(settings, bad)
+        return bad
     snapshots, errors = scan_directory(root, settings.ignore_file, settings.hash_chunk_size)
     result = compare_snapshots(baseline, snapshots, errors)
     result.scan_id = sid
@@ -76,6 +96,7 @@ def verify(root: Path, settings: AppSettings) -> ScanResult:
         settings.audit_log_path or (settings.state_dir / "audit.jsonl"),
         "VERIFY_COMPLETED", sid, {"status": result.status, "change_count": len(result.changes)},
     )
+    _record_history(settings, result)
     return result
 
 
@@ -83,6 +104,7 @@ def accept(root: Path, scan_id: str, settings: AppSettings) -> OperationResult:
     settings = settings
     baseline = _load_verified_baseline(settings)
     if baseline is None:
+        _audit(settings, "ACCEPT_BLOCKED", scan_id, {"reason": "BASELINE_INVALID"})
         return OperationResult(
             operation="ACCEPT",
             success=False,

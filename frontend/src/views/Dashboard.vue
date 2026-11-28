@@ -6,8 +6,8 @@
       <div class="row">
         <input v-model="root" placeholder="Folder to monitor (e.g. C:/Projects/MyApp)" class="input" />
         <button :disabled="scanning || !root" @click="runScan" class="btn btn-primary">Verify</button>
-        <button :disabled="scanning || !lastScanId" @click="openAccept" class="btn">Accept Changes</button>
-        <button @click="initRoot" class="btn btn-ghost">Init Baseline</button>
+        <button :disabled="scanning || !result || result.status !== 'CHANGED'" @click="openAccept" class="btn">Accept Changes</button>
+        <button :disabled="scanning || !root" @click="initRoot" class="btn btn-ghost">Init Baseline</button>
       </div>
       <p v-if="root" class="hint">Baseline and state are stored outside the monitored root.</p>
     </section>
@@ -47,7 +47,7 @@
       </div>
     </section>
 
-    <dialog v-if="acceptOpen" class="dlg" @click.self="acceptOpen = false">
+    <div v-if="acceptOpen" class="overlay" @click.self="acceptOpen = false">
       <div class="dlg-body">
         <h2>Accept Changes</h2>
         <p>Approve the current scan state as the new baseline for <strong>{{ root }}</strong>.</p>
@@ -56,7 +56,7 @@
           <button @click="doAccept" class="btn btn-primary">Accept</button>
         </div>
       </div>
-    </dialog>
+    </div>
   </div>
 </template>
 
@@ -90,16 +90,14 @@ async function initRoot() {
   scanning.value = true;
   error.value = null;
   try {
-    await fetch("http://localhost:8000/api/v1/scans", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ root_path: root.value, action: "init" }),
-    });
+    await api.init(root.value);
   } catch (e) {
     error.value = e.message;
-  } finally {
     scanning.value = false;
+    return;
   }
+  scanning.value = false;
+  await runScan();
 }
 
 function openAccept() { acceptOpen.value = true; }
@@ -164,4 +162,6 @@ h1 { font-size: 1.5rem; margin: 0 0 16px 0; letter-spacing: -0.5px; }
 .dlg-body h2 { margin: 0 0 8px 0; font-size: 1.25rem; }
 .dlg-body p { margin: 0 0 16px 0; color: #374151; font-size: 0.95rem; }
 .dlg-body .actions { display: flex; gap: 8px; justify-content: flex-end; }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.dlg-body { background: #fff; border-radius: 10px; padding: 20px 24px; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
 </style>

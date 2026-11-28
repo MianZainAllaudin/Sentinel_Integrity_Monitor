@@ -19,4 +19,8 @@ export const api = {
   status: () => request("/api/v1/status"),
   scan: (root) => request("/api/v1/scans", { method: "POST", body: JSON.stringify({ root_path: root }) }),
   accept: (scanId, confirm) => request("/api/v1/accept", { method: "POST", body: JSON.stringify({ scan_id: scanId, confirm }) }),
+  scans: () => request("/api/v1/scans"),
+  scanDetail: (id) => request("/api/v1/scans/" + encodeURIComponent(id)),
+  clearScans: () => request("/api/v1/scans", { method: "DELETE" }),
+  init: (root) => request("/api/v1/baselines", { method: "POST", body: JSON.stringify({ root_path: root }) }),
 };

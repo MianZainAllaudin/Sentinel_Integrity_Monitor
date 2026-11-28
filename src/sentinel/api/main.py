@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from .routes import router
 
@@ -13,3 +14,6 @@ app.add_middleware(
 )
 
 app.include_router(router)
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    return JSONResponse(status_code=exc.status_code, content={"success": False, "error": exc.detail})

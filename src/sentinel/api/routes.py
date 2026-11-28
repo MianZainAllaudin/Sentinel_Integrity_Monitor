@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from .schemas import ScanStartRequest, ScanAcceptRequest, HealthResponse
-from .services import start_scan, accept_changes, get_status
+from .services import start_scan, accept_changes, get_status, init_baseline, list_scans as svc_list_scans, get_scan_by_id, clear_scans
 
 router = APIRouter(prefix="/api/v1")
 
@@ -25,13 +25,28 @@ def start_scan_endpoint(body: ScanStartRequest):
 
 @router.get("/scans")
 def list_scans():
-    return {"success": True, "data": {"scans": []}}
+    return svc_list_scans()
+
+
+@router.delete("/scans")
+def clear_scans_endpoint():
+    return clear_scans()
 
 
 @router.get("/scans/{scan_id}")
 def get_scan(scan_id: str):
-    return {"success": True, "data": {"scan_id": scan_id}}
+    scan = get_scan_by_id(scan_id)
+    if scan is None:
+        raise HTTPException(status_code=404, detail={"code": "SCAN_NOT_FOUND", "message": "unknown scan_id"})
+    return {"success": True, "data": scan}
 
+
+@router.post("/baselines")
+def init_endpoint(body: ScanStartRequest):
+    result = init_baseline(body.root_path)
+    if not result.get("success", False):
+        raise HTTPException(status_code=400, detail=result.get("error", {"code": "INIT_FAILED", "message": "init failed"}))
+    return result
 
 @router.post("/accept")
 def accept_endpoint(body: ScanAcceptRequest):
